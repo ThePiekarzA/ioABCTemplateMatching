@@ -1,0 +1,219 @@
+# ABC class implements Artificial Bee Colony algorithm for image template matching
+from __future__ import division
+
+from solution import Solution
+from random import randint
+import numpy as np
+import sys
+
+class ABC:
+    # <editor-fold desc="Parameter set">
+    # Algorithm parameters
+    SN = 0  # number of solutions (size of colony)
+    MCN = 0  # maximum cycle number
+    SLT = 0 # solution lifetime (in cycles)
+
+    NSN = 0 # number of solutions created in neighborhood
+    NS = 0 # neighborhood size (radius)
+
+    EBN = 0 # employed bees number
+    OBN = 0 # onlooker bees number
+    SBN = 0 # scout bees number
+
+    # Solutions set
+    solutions = []
+    bestSolution = None
+
+    # Images
+    imgRef = []
+    imgObj = []
+
+    # Constraints
+    xCon = 0  # number of ref image columns
+    yCon = 0  # number of ref image rows
+
+    xObj = 0  # number of searched image columns
+    yObj = 0  # number of searched image rows
+
+    # scale and rotation constraints in future phase
+
+    # </editor-fold>
+
+    # Initialization of ABC class
+    # parameters setup etc.
+    def __init__(self, _imgRef, _imgObj, _SN=100, _MCN=100, _SLT=20, _NSN=5, _NS=10):
+        self.SN = _SN
+        self.MCN = _MCN
+        self.SLT = _SLT
+
+        self.NSN = _NSN
+        self.NS = _NS
+
+        self.EBN = int(0.5*_SN)
+        self.OBN = int(0.5*_SN)
+        self.SBN = 0
+
+        self.imgRef = _imgRef
+        self.imgObj = _imgObj
+
+        self.xCon = _imgRef.shape[1]
+        self.yCon = _imgRef.shape[0]
+
+        self.xObj = self.imgObj.shape[1]
+        self.yObj = self.imgObj.shape[0]
+
+
+    # Main algorithm loop
+    def run(self):
+        CCN = 0  # Current cycle number
+
+        # initialization phase
+        self.initColony()
+
+        self.calculateFitness()
+        self.findBestSolution()
+        print("Init best pos({}, {}), fitness: {}".format(self.bestSolution.x,
+                                                          self.bestSolution.y,
+                                                          self.bestSolution.fitness))
+
+        # main loop phase
+        while CCN < self.MCN:
+            self.calculateFitness()
+
+            self.searchNeighborhood()
+
+            self.calculateProbability()
+
+            self.onlookersPhase()
+
+            self.scoutPhase()
+
+            self.calculateFitness()
+            self.findBestSolution()
+            CCN += 1
+            print("Iteration {} best pos({}, {}), fitness: {}".format(CCN,
+                                                                        self.bestSolution.x,
+                                                                        self.bestSolution.y,
+                                                                        self.bestSolution.fitness))
+
+
+    # Algorithm functions (phases)
+    def createRandomSolution(self):
+        return Solution(
+            randint(self.yObj // 2, self.yCon - self.yObj // 2),
+            randint(self.xObj // 2, self.xCon - self.xObj // 2))
+
+
+
+    # Initialize population
+    def initColony(self):
+        # Create SN number of random solutions
+        for i in range(self.EBN):
+            self.solutions.append(self.createRandomSolution())
+
+
+    # Evaluate fitness of each solution and allocate them to correct groups
+    def calculateFitness(self):
+        for sol in self.solutions:
+            sol.calculateFitness(self.imgRef, self.imgObj)
+
+    def createNeighbor(self, sol):
+        x = 0
+        y = 0
+        # pick new coordinates in neighborhood of current ones
+        # and check if they fit in ref image
+        clamp = lambda n, minN, maxN: max(min(maxN, n), minN)
+
+        x = randint(sol.x - self.NS, sol.x + self.NS)
+        x = clamp(x, self.xObj // 2, self.xCon - self.xObj // 2)
+
+        y = randint(sol.y - self.NS, sol.y + self.NS)
+        y = clamp(y, self.yObj // 2, self.yCon - self.yObj // 2)
+
+        return Solution(x, y)
+
+    # Create neighborhood of current positions
+    def searchNeighborhood(self):
+        # iterate through known solutions
+        for idx, sol in enumerate(self.solutions):
+            # create NSN number of neighborhood solutions
+            for i in range(self.NSN):
+                neighbor = self.createNeighbor(sol)
+
+                # evaluate neighbor fitness
+                neighbor.calculateFitness(self.imgRef, self.imgObj)
+
+                # if neighbor is better, chose it as solution
+                if neighbor.fitness > sol.fitness:
+                    self.solutions[idx] = neighbor
+
+
+    # Calculate probabilities for the solutions
+    def calculateProbability(self):
+        sumFitness = 0
+        minFitness = 0
+        for sol in self.solutions:
+            sumFitness += sol.fitness
+            if sol.fitness < minFitness:
+                minFitness = sol.fitness
+
+        bias = -minFitness
+        sumFitness += bias * len(self.solutions)
+
+        for sol in self.solutions:
+            sol.probability = (sol.fitness + bias) / sumFitness
+
+
+    # Create new solutions for onlookers based on probability
+    def onlookersPhase(self):
+        newSolutions = self.solutions.copy()
+        abandonedSolutions = []
+
+        self.SBN = 0
+
+        probabilities = [sol.probability for sol in self.solutions]
+
+        for i in range(self.OBN):
+            # choice index of solution based on probabilities
+            choice = np.random.choice(len(self.solutions), 1, p=probabilities)[0]
+
+
+            # create neighbor of chosen solution
+            neighbor = self.createNeighbor(self.solutions[choice])
+
+            # evaluate neighbor fitness
+            neighbor.calculateFitness(self.imgRef, self.imgObj)
+
+            # if neighbor is better, chose it as solution
+            # if not, abandon it and turn employed bee into scout
+            if neighbor.fitness > self.solutions[choice].fitness:
+                newSolutions[choice] = neighbor
+            else:
+                abandonedSolutions.append(choice)
+                self.SBN += 1
+
+        self.solutions = []
+        for idx in range(self.EBN):
+            if idx not in abandonedSolutions:
+                self.solutions.append(newSolutions[idx])
+
+
+    # Create new random solutions for unemployed bees
+    def scoutPhase(self):
+        for i in range(self.SBN):
+            self.solutions.append(self.createRandomSolution())
+
+    # Return best solution
+    def findBestSolution(self):
+        self.solutions.sort(key=lambda x: x.fitness)
+
+        self.bestSolution =  self.solutions[-1]
+
+
+
+
+
+
+
+
+
