@@ -7,7 +7,9 @@ import cv2
 imgRef = cv2.imread('img/ref1.jpg')
 imgObj = cv2.imread('img/obiekt1.jpg')
 
-alg = ABC(imgRef, imgObj, _SN=40, _MCN=50)
+alg = ABC(imgRef, imgObj, _SN=20, _MCN=50)
+
+alg.settings(_showGUI=True)
 
 alg.run()
 

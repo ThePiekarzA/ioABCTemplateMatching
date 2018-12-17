@@ -4,7 +4,7 @@ from __future__ import division
 from solution import Solution
 from random import randint
 import numpy as np
-import sys
+from visual import Visualize
 
 class ABC:
     # <editor-fold desc="Parameter set">
@@ -37,6 +37,10 @@ class ABC:
 
     # scale and rotation constraints in future phase
 
+    showGUI = False
+    visualize = None
+    showLog = False
+
     # </editor-fold>
 
     # Initialization of ABC class
@@ -63,12 +67,25 @@ class ABC:
         self.yObj = self.imgObj.shape[0]
 
 
+
+    def settings(self, _showGUI=False, _showLog=False):
+        self.showGUI = _showGUI
+        self.showLog = _showLog
+
+        if self.showGUI:
+            self.visualize = Visualize(self.imgRef)
+            self.visualize.refresh()
+
+
+
     # Main algorithm loop
     def run(self):
         CCN = 0  # Current cycle number
 
         # initialization phase
         self.initColony()
+
+        self.showBees(self.solutions)
 
         self.calculateFitness()
         self.findBestSolution()
@@ -82,26 +99,37 @@ class ABC:
 
             self.searchNeighborhood()
 
+            self.showBees(self.solutions)
+
             self.calculateProbability()
 
             self.onlookersPhase()
 
+            self.showBees(self.solutions)
+
             self.scoutPhase()
+
+            self.showBees(self.solutions)
 
             self.calculateFitness()
             self.findBestSolution()
+
+            self.abandonSolutions()
+
             CCN += 1
             print("Iteration {} best pos({}, {}), fitness: {}".format(CCN,
                                                                         self.bestSolution.x,
                                                                         self.bestSolution.y,
                                                                         self.bestSolution.fitness))
 
+            self.visualize.clear()
+
 
     # Algorithm functions (phases)
     def createRandomSolution(self):
         return Solution(
-            randint(self.yObj // 2, self.yCon - self.yObj // 2),
-            randint(self.xObj // 2, self.xCon - self.xObj // 2))
+            randint(self.xObj // 2, self.xCon - self.xObj // 2),
+            randint(self.yObj // 2, self.yCon - self.yObj // 2))
 
 
 
@@ -157,7 +185,7 @@ class ABC:
             if sol.fitness < minFitness:
                 minFitness = sol.fitness
 
-        bias = -minFitness
+        bias = -minFitness*2
         sumFitness += bias * len(self.solutions)
 
         for sol in self.solutions:
@@ -169,9 +197,11 @@ class ABC:
         newSolutions = self.solutions.copy()
         abandonedSolutions = []
 
-        self.SBN = 0
 
         probabilities = [sol.probability for sol in self.solutions]
+        choices = []
+
+
 
         for i in range(self.OBN):
             # choice index of solution based on probabilities
@@ -187,15 +217,31 @@ class ABC:
             # if neighbor is better, chose it as solution
             # if not, abandon it and turn employed bee into scout
             if neighbor.fitness > self.solutions[choice].fitness:
-                newSolutions[choice] = neighbor
-            else:
-                abandonedSolutions.append(choice)
-                self.SBN += 1
+                newSolutions.append(neighbor)
+                choices.append(choice)
+            # else:
+            #     abandonedSolutions.append(choice)
+            #     self.SBN += 1
+
+        # self.solutions = []
+        # for idx in range(self.EBN):
+        #     if idx not in abandonedSolutions:
+        #         self.solutions.append(newSolutions[idx])
+
+        for idx, sol in enumerate(self.solutions):
+            if idx in choices:
+                newSolutions.append(sol)
 
         self.solutions = []
-        for idx in range(self.EBN):
-            if idx not in abandonedSolutions:
-                self.solutions.append(newSolutions[idx])
+        self.EBN = 0
+
+        for sol in newSolutions:
+            self.solutions.append(sol)
+            self.EBN += 1
+
+        print("Solutions number: {}".format(len(self.solutions)))
+
+        self.SBN = self.SN - self.EBN
 
 
     # Create new random solutions for unemployed bees
@@ -207,8 +253,20 @@ class ABC:
     def findBestSolution(self):
         self.solutions.sort(key=lambda x: x.fitness)
 
-        self.bestSolution =  self.solutions[-1]
+        if self.bestSolution is None:
+            self.bestSolution =  self.solutions[-1]
+        elif self.bestSolution.fitness < self.solutions[-1].fitness:
+            self.bestSolution = self.solutions[-1]
 
+
+    def abandonSolutions(self):
+        self.solutions = self.solutions[self.SN//2:]
+
+    def showBees(self, beeList):
+        if self.showGUI:
+            for sol in beeList:
+                self.visualize.drawPoint(sol.x, sol.y)
+            self.visualize.refresh()
 
 
 
