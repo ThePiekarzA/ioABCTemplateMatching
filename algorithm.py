@@ -4,6 +4,7 @@ from __future__ import division
 from solution import Solution
 from random import randint
 import numpy as np
+import cv2
 from visual import Visualize
 
 class ABC:
@@ -123,6 +124,7 @@ class ABC:
                                                                         self.bestSolution.fitness))
 
             self.visualize.clear()
+        self.visualize.wait()
 
 
     # Algorithm functions (phases)

@@ -17,15 +17,18 @@ class Visualize:
 
         self.scale = 8
 
-        if self.img.shape[1] > 800 or self.img.shape[0] > 600:
-            self.drawnImg = cv2.resize(self.drawnImg, (1000, 600))
+        if self.img.shape[1] > 1000 or self.img.shape[0] > 800:
+            proportion = self.img.shape[0] / self.img.shape[1]
+            self.drawnImg = cv2.resize(self.drawnImg, (1000, int(1000*proportion)))
         cv2.imshow("ABC", self.drawnImg)
         cv2.waitKey(0)
 
 
     def refresh(self):
         if self.img.shape[1] > 800 or self.img.shape[0] > 600:
-            self.drawnImg = cv2.resize(self.drawnImg, (1000, 600))
+            proportion = self.img.shape[0] / self.img.shape[1]
+            self.drawnImg = cv2.resize(self.drawnImg, (1000, int(1000 * proportion)))
+            #self.drawnImg = cv2.resize(self.drawnImg, (1000, 600))
         cv2.imshow("ABC", self.drawnImg)
         cv2.waitKey(100)
         #cv2.destroyAllWindows()
@@ -43,3 +46,6 @@ class Visualize:
 
     def clear(self):
         self.drawnImg = self.img.copy()
+
+    def wait(self):
+        cv2.waitKey(0)
