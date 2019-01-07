@@ -6,6 +6,7 @@ class Solution:
     # Optimised parameters
     x = 0  # row of the image
     y = 0  # column if the image
+    angle = 0 # rotation in radians (0, 360)
     # scale and rotation in future phase
 
     # Other parameters
@@ -15,12 +16,13 @@ class Solution:
     # </editor-fold>
 
     # Solution constructor
-    def __init__(self, _x, _y):
+    def __init__(self, _x, _y, _angle):
         self.x = _x
         self.y = _y
+        self.angle = _angle
 
     def calculateFitness(self, imgRef, imgObj):
-        # Calculate size o an object image
+        # Calculate size of an object image
         xSize = imgObj.shape[1]
         ySize = imgObj.shape[0]
 

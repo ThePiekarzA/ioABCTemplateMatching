@@ -4,8 +4,8 @@ from __future__ import division
 from solution import Solution
 from random import randint
 import numpy as np
-import cv2
 from visual import Visualize
+from plot import Plot
 
 class ABC:
     # <editor-fold desc="Parameter set">
@@ -41,6 +41,9 @@ class ABC:
     showGUI = False
     visualize = None
     showLog = False
+    showPlot = False
+    plot = None
+
 
     # </editor-fold>
 
@@ -69,14 +72,17 @@ class ABC:
 
 
 
-    def settings(self, _showGUI=False, _showLog=False):
+    def settings(self, _showGUI=False, _showLog=False, _showPlot=False):
         self.showGUI = _showGUI
         self.showLog = _showLog
+        self.showPlot = _showPlot
+
+        if self.showPlot:
+            self.plot = Plot(self.MCN)
 
         if self.showGUI:
             self.visualize = Visualize(self.imgRef)
             self.visualize.refresh()
-
 
 
     # Main algorithm loop
@@ -123,8 +129,15 @@ class ABC:
                                                                         self.bestSolution.y,
                                                                         self.bestSolution.fitness))
 
-            self.visualize.clear()
-        self.visualize.wait()
+            if self.showPlot:
+                self.plot.drawPoint(-1 * self.bestSolution.fitness)
+
+            if self.showGUI:
+                self.visualize.clear()
+
+        if self.showGUI:
+            self.visualize.wait()
+
 
 
     # Algorithm functions (phases)
