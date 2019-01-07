@@ -124,9 +124,10 @@ class ABC:
             self.abandonSolutions()
 
             CCN += 1
-            print("Iteration {} best pos({}, {}), fitness: {}".format(CCN,
+            print("Iteration {} best pos({}, {}, {}\u00b0), fitness: {}".format(CCN,
                                                                         self.bestSolution.x,
                                                                         self.bestSolution.y,
+                                                                        self.bestSolution.angle,
                                                                         self.bestSolution.fitness))
 
             if self.showPlot:
@@ -144,8 +145,8 @@ class ABC:
     def createRandomSolution(self):
         return Solution(
             randint(self.xObj // 2, self.xCon - self.xObj // 2),
-            randint(self.yObj // 2, self.yCon - self.yObj // 2))
-
+            randint(self.yObj // 2, self.yCon - self.yObj // 2),
+            randint(0, 360))
 
 
     # Initialize population
@@ -173,7 +174,10 @@ class ABC:
         y = randint(sol.y - self.NS, sol.y + self.NS)
         y = clamp(y, self.yObj // 2, self.yCon - self.yObj // 2)
 
-        return Solution(x, y)
+        angle = randint(sol.angle - 50, sol.angle + 50)
+        angle = clamp(angle, 0, 360)
+
+        return Solution(x, y, angle)
 
     # Create neighborhood of current positions
     def searchNeighborhood(self):

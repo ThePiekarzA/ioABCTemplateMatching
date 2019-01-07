@@ -1,5 +1,6 @@
 # This class represents a single solution of an ABC algorithm
 import cv2
+from utils import rotate_bound as rotate
 
 class Solution:
     # <editor-fold desc="Parameter set">
@@ -22,9 +23,12 @@ class Solution:
         self.angle = _angle
 
     def calculateFitness(self, imgRef, imgObj):
+        # Rotate object image to the solution angle
+        rotatedObject = rotate(imgObj, self.angle)
+
         # Calculate size of an object image
-        xSize = imgObj.shape[1]
-        ySize = imgObj.shape[0]
+        xSize = rotatedObject.shape[1]
+        ySize = rotatedObject.shape[0]
 
         # Cut image from imgRef to compare with imgObj
         imgCmp = imgRef[self.y-ySize//2:self.y+ySize//2, self.x-xSize//2:self.x+xSize//2]
