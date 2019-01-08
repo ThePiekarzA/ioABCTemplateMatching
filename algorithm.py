@@ -134,7 +134,7 @@ class ABC:
                 self.plot.drawPoint(-1 * self.bestSolution.fitness)
 
             if self.showGUI:
-                self.visualize.clear()
+                self.visualize.refresh()
 
         if self.showGUI:
             self.visualize.wait()
@@ -146,7 +146,7 @@ class ABC:
         return Solution(
             randint(self.xObj // 2, self.xCon - self.xObj // 2),
             randint(self.yObj // 2, self.yCon - self.yObj // 2),
-            randint(0, 360))
+            randint(0, 359))
 
 
     # Initialize population
@@ -175,7 +175,7 @@ class ABC:
         y = clamp(y, self.yObj // 2, self.yCon - self.yObj // 2)
 
         angle = randint(sol.angle - 50, sol.angle + 50)
-        angle = clamp(angle, 0, 360)
+        angle = clamp(angle, 0, 359)
 
         return Solution(x, y, angle)
 
@@ -283,8 +283,9 @@ class ABC:
 
     def showBees(self, beeList):
         if self.showGUI:
+            self.visualize.clear()
             for sol in beeList:
-                self.visualize.drawPoint(sol.x, sol.y)
+                self.visualize.drawPoint(sol.x, sol.y, sol.angle)
             self.visualize.refresh()
 
 
