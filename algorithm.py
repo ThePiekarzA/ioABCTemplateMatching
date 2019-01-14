@@ -121,6 +121,13 @@ class ABC:
             self.calculateFitness()
             self.findBestSolution()
 
+            if self.showGUI:
+                self.visualize.clear()
+                for sol in self.solutions:
+                    self.visualize.drawPoint(sol.x, sol.y, sol.angle, _color=(0,0,255))
+                self.visualize.drawPoint(self.bestSolution.x, self.bestSolution.y, self.bestSolution.angle, _color=(0,255,0))
+                self.visualize.refresh()
+
             self.abandonSolutions()
 
             CCN += 1
@@ -281,11 +288,11 @@ class ABC:
     def abandonSolutions(self):
         self.solutions = self.solutions[self.SN//2:]
 
-    def showBees(self, beeList):
+    def showBees(self, beeList, color=(0,0,255)):
         if self.showGUI:
             self.visualize.clear()
             for sol in beeList:
-                self.visualize.drawPoint(sol.x, sol.y, sol.angle)
+                self.visualize.drawPoint(sol.x, sol.y, sol.angle, _color=color)
             self.visualize.refresh()
 
 

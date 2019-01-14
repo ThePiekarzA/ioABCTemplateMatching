@@ -9,11 +9,11 @@ class Visualize:
 
         self.drawnImg = self.img.copy()
 
-        self.arrowLength = 80
+        self.arrowLength = 40
 
         self.fontFace = cv2.FONT_HERSHEY_SIMPLEX
         self.fontScale = 0.2
-        self.thickness = 5
+        self.thickness = 2
         self.marker = 'o'
         self.color = (0,0,255)
 
@@ -35,16 +35,16 @@ class Visualize:
         cv2.waitKey(100)
         #cv2.destroyAllWindows()
 
-    def drawPoint(self, x, y, angle):
+    def drawPoint(self, x, y, angle, _color=(255,0,0)):
         textSize = cv2.getTextSize(self.marker, self.fontFace, self.fontScale, self.thickness)
 
         angle = 360 - angle + 90
         radAngle = angle*np.pi/180
 
-        xEnd = -int(np.cos(radAngle) * self.arrowLength) + x
-        yEnd = int(np.sin(radAngle) * self.arrowLength) + y
+        xEnd = int(np.cos(radAngle) * self.arrowLength) + x
+        yEnd = -int(np.sin(radAngle) * self.arrowLength) + y
 
-        cv2.arrowedLine(self.drawnImg, (x,y), (xEnd,yEnd), self.color, thickness=self.thickness)
+        cv2.arrowedLine(self.drawnImg, (x,y), (xEnd,yEnd), _color, thickness=self.thickness)
 
 
         #cv2.putText(self.drawnImg,
