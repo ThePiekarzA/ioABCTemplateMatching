@@ -1,6 +1,8 @@
+# Class plot manages data plotting ;)
+
+import matplotlib as mpl
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from matplotlib import style
+
 
 class Plot:
     xValues = []
@@ -11,6 +13,8 @@ class Plot:
 
     def __init__(self, _xMax):
         self.xMax = _xMax
+
+        mpl.rcParams['toolbar'] = 'None'
 
         self.fig = plt.figure()
         plt.ion()

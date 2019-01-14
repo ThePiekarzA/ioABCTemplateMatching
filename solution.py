@@ -13,6 +13,7 @@ class Solution:
     # Other parameters
     fitness = 0
     probability = 0
+    age = 0
 
     # </editor-fold>
 
@@ -21,7 +22,9 @@ class Solution:
         self.x = _x
         self.y = _y
         self.angle = _angle
+        self.age = 0
 
+    # Calculate solution fitness
     def calculateFitness(self, imgRef, imgObj):
         # Rotate object image to the solution angle
 
@@ -34,11 +37,13 @@ class Solution:
         # Cut image from imgRef to compare with imgObj
         imgCmp = imgRef[self.y-ySize//2:self.y+ySize//2, self.x-xSize//2:self.x+xSize//2]
 
-        # Fitness is defined as sum of differences between histograms of each level of RGB
+        # Calculate fitness using one of compareX functions
         tempFitness = self.compare2(rotatedObject, imgCmp)
 
         self.fitness = -tempFitness
 
+
+    # Basic histogram difference
     def compare1(self, imgObj, imgCmp):
         tempFitness = 0
         for level in range(3):
@@ -51,6 +56,7 @@ class Solution:
 
         return tempFitness
 
+    # Histogram difference with emphasize on center pixels
     def compare2(self, imgObj, imgCmp):
         tempFitness = 0
         for level in range(3):

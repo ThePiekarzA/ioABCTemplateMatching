@@ -24,6 +24,7 @@ class ABC:
     # Solutions set
     solutions = []
     bestSolution = None
+    iterBestSolution = None
 
     # Images
     imgRef = []
@@ -38,18 +39,25 @@ class ABC:
 
     # scale and rotation constraints in future phase
 
+
+    # data presentation parameters
+    # Image and results presentation
     showGUI = False
     visualize = None
-    showLog = False
+
+    # Fitness plot
     showPlot = False
     plot = None
+
+    # for future use
+    showLog = False
 
 
     # </editor-fold>
 
     # Initialization of ABC class
     # parameters setup etc.
-    def __init__(self, _imgRef, _imgObj, _SN=100, _MCN=100, _SLT=20, _NSN=5, _NS=10):
+    def __init__(self, _imgRef, _imgObj, _SN=100, _MCN=100, _SLT=3, _NSN=5, _NS=10):
         self.SN = _SN
         self.MCN = _MCN
         self.SLT = _SLT
@@ -71,7 +79,7 @@ class ABC:
         self.yObj = self.imgObj.shape[0]
 
 
-
+    # Data presentation settings
     def settings(self, _showGUI=False, _showLog=False, _showPlot=False):
         self.showGUI = _showGUI
         self.showLog = _showLog
@@ -121,12 +129,17 @@ class ABC:
             self.calculateFitness()
             self.findBestSolution()
 
+
             if self.showGUI:
                 self.visualize.clear()
                 for sol in self.solutions:
                     self.visualize.drawPoint(sol.x, sol.y, sol.angle, _color=(0,0,255))
-                self.visualize.drawPoint(self.bestSolution.x, self.bestSolution.y, self.bestSolution.angle, _color=(0,255,0))
+
+                self.visualize.drawPoint(self.bestSolution.x, self.bestSolution.y, self.bestSolution.angle, _color=(0, 255, 0))
+                self.visualize.drawPoint(self.iterBestSolution.x, self.iterBestSolution.y, self.iterBestSolution.angle, _color=(255, 0, 0))
                 self.visualize.refresh()
+
+            self.ageSolutions()
 
             self.abandonSolutions()
 
@@ -149,6 +162,7 @@ class ABC:
 
 
     # Algorithm functions (phases)
+
     def createRandomSolution(self):
         return Solution(
             randint(self.xObj // 2, self.xCon - self.xObj // 2),
@@ -163,11 +177,12 @@ class ABC:
             self.solutions.append(self.createRandomSolution())
 
 
-    # Evaluate fitness of each solution and allocate them to correct groups
+    # Evaluate fitness of each solution
     def calculateFitness(self):
         for sol in self.solutions:
             sol.calculateFitness(self.imgRef, self.imgObj)
 
+    # Create neighbor based on current bee
     def createNeighbor(self, sol):
         x = 0
         y = 0
@@ -221,13 +236,9 @@ class ABC:
     # Create new solutions for onlookers based on probability
     def onlookersPhase(self):
         newSolutions = self.solutions.copy()
-        abandonedSolutions = []
-
 
         probabilities = [sol.probability for sol in self.solutions]
         choices = []
-
-
 
         for i in range(self.OBN):
             # choice index of solution based on probabilities
@@ -245,14 +256,6 @@ class ABC:
             if neighbor.fitness > self.solutions[choice].fitness:
                 newSolutions.append(neighbor)
                 choices.append(choice)
-            # else:
-            #     abandonedSolutions.append(choice)
-            #     self.SBN += 1
-
-        # self.solutions = []
-        # for idx in range(self.EBN):
-        #     if idx not in abandonedSolutions:
-        #         self.solutions.append(newSolutions[idx])
 
         for idx, sol in enumerate(self.solutions):
             if idx in choices:
@@ -267,7 +270,8 @@ class ABC:
 
         print("Solutions number: {}".format(len(self.solutions)))
 
-        self.SBN = self.SN - self.EBN
+        # Increment scout bees number by abandoned solutions
+        self.SBN += self.SN - self.EBN
 
 
     # Create new random solutions for unemployed bees
@@ -275,9 +279,13 @@ class ABC:
         for i in range(self.SBN):
             self.solutions.append(self.createRandomSolution())
 
+        self.SBN = 0
+
     # Return best solution
     def findBestSolution(self):
         self.solutions.sort(key=lambda x: x.fitness)
+
+        self.iterBestSolution = self.solutions[-1]
 
         if self.bestSolution is None:
             self.bestSolution =  self.solutions[-1]
@@ -285,9 +293,26 @@ class ABC:
             self.bestSolution = self.solutions[-1]
 
 
+    # Abandon worse half os solutions
     def abandonSolutions(self):
         self.solutions = self.solutions[self.SN//2:]
 
+
+    # Increment solutions age by one and abandon older than solution lifetime
+    def ageSolutions(self):
+        newSolutions = []
+        for idx, sol in enumerate(self.solutions):
+            sol.age += 1
+
+            if sol.age > self.SLT:
+                self.SBN += 1
+            else:
+                newSolutions.append(self.solutions[idx])
+
+        self.solutions = newSolutions
+
+
+    # Draw arrows representing bees
     def showBees(self, beeList, color=(0,0,255)):
         if self.showGUI:
             self.visualize.clear()

@@ -1,4 +1,4 @@
-# This class implements algorithm visualizer
+# This class implements algorithm data visualizer
 
 import cv2
 import numpy as np
@@ -11,14 +11,12 @@ class Visualize:
 
         self.arrowLength = 40
 
-        self.fontFace = cv2.FONT_HERSHEY_SIMPLEX
-        self.fontScale = 0.2
         self.thickness = 2
-        self.marker = 'o'
         self.color = (0,0,255)
 
         self.scale = 8
 
+        # Shrink image if too big
         if self.img.shape[1] > 1000 or self.img.shape[0] > 800:
             proportion = self.img.shape[0] / self.img.shape[1]
             self.drawnImg = cv2.resize(self.drawnImg, (1000, int(1000*proportion)))
@@ -26,6 +24,7 @@ class Visualize:
         cv2.waitKey(0)
 
 
+    # Refresh image with drawn points
     def refresh(self):
         if self.img.shape[1] > 800 or self.img.shape[0] > 600:
             proportion = self.img.shape[0] / self.img.shape[1]
@@ -35,9 +34,8 @@ class Visualize:
         cv2.waitKey(100)
         #cv2.destroyAllWindows()
 
+    # Draw point on image
     def drawPoint(self, x, y, angle, _color=(255,0,0)):
-        textSize = cv2.getTextSize(self.marker, self.fontFace, self.fontScale, self.thickness)
-
         angle = 360 - angle + 90
         radAngle = angle*np.pi/180
 
@@ -46,14 +44,6 @@ class Visualize:
 
         cv2.arrowedLine(self.drawnImg, (x,y), (xEnd,yEnd), _color, thickness=self.thickness)
 
-
-        #cv2.putText(self.drawnImg,
-        #            self.marker,
-        #            (x - textSize[0][0]//2, y - textSize[0][1]//2),
-        #            self.fontFace*self.scale,
-        #            self.fontScale*self.scale,
-        #            self.color,
-        #            self.thickness*self.scale)
 
     def clear(self):
         self.drawnImg = self.img.copy()
