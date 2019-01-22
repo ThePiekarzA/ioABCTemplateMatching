@@ -23,6 +23,8 @@ class Solution:
         self.y = _y
         self.angle = _angle
         self.age = 0
+        self.fitness = 0
+        self.probability = 0
 
     # Calculate solution fitness
     def calculateFitness(self, imgRef, imgObj):

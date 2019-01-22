@@ -83,6 +83,11 @@ class ABC:
         self.xObj = self.imgObj.shape[1]
         self.yObj = self.imgObj.shape[0]
 
+        self.solutions = []
+        self.bestSolution = None
+        self.bestSolutionIterationNumber = 0
+        self.iterBestSolution = None
+
 
     # Data presentation settings
     def settings(self, _showGUI=False, _showLog=False, _showPlot=False, _testMode=False, _plotFileName="plotFile", _imgFileName="imgName"):

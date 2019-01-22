@@ -43,6 +43,7 @@ f.write("\nTest will be executed {} times".format(iterationNumber))
 f.write("\nReference image: {}\nObject image: {}\n".format(imgRefName, imgObjName))
 
 fitnesses = []
+iterations = []
 times = []
 
 print("Test output directory is {}".format(directory))
@@ -56,7 +57,7 @@ for iter in range(iterationNumber):
     print("Executing test: {}".format(iter+1))
 
     # create an Algorithm instance with desired parameters
-    alg = ABC(imgRef, imgObj, _SN=60, _MCN=50, _NS=imgObj.shape[0] // 10)
+    alg = ABC(imgRef, imgObj, _SN=60, _MCN=20, _NS=imgObj.shape[0] // 10)
 
     # for test purposes set gui to true and turn on testmode, also show plot
     alg.settings(_showGUI=True, _testMode=True, _showPlot=True, _plotFileName=plotFileName, _imgFileName=imageFileName)
@@ -85,8 +86,9 @@ for iter in range(iterationNumber):
     times.append(calculationTime)
 
     fitnesses.append(alg.bestSolution.fitness)
+    iterations.append(alg.bestSolutionIterationNumber)
 
-    f.write("\nBest result of iteration {} is ({}, {}, {}), fitness: {}, time: {:.02f}s".format(alg.bestSolutionIterationNumber,
+    f.write("\nBest result found on iteration {} is ({}, {}, {}), fitness: {}, time: {:.02f}s".format(alg.bestSolutionIterationNumber,
                                                                                     alg.bestSolution.x,
                                                                                       alg.bestSolution.y,
                                                                                       alg.bestSolution.angle,
@@ -105,8 +107,13 @@ bestT = min(times)
 worstT = max(times)
 avgT = sum(times)/float(iterationNumber)
 
+bestI = min(iterations)
+worstI = max(iterations)
+avgI = sum(iterations)/float(iterationNumber)
+
 f.write("\n\nTest summary")
 f.write("\nFitness best {}, worst {}, average, {}".format(bestF, worstF, avgF))
+f.write("\nIterations best {}, worst {}, average, {}".format(bestI, worstI, avgI))
 f.write("\nTime best {:.02f}s, worst {:.02f}s, average, {:.02f}s".format(bestT, worstT, avgT))
 
 f.close()
