@@ -4,8 +4,11 @@ import cv2
 import numpy as np
 
 class Visualize:
-    def __init__(self, _img):
+    def __init__(self, _img, _testMode=False, _outputImgName="EndState"):
+        self.testMode = _testMode
         self.img = _img
+
+        self.outputImageName = _outputImgName
 
         self.drawnImg = self.img.copy()
 
@@ -21,7 +24,8 @@ class Visualize:
             proportion = self.img.shape[0] / self.img.shape[1]
             self.drawnImg = cv2.resize(self.drawnImg, (1000, int(1000*proportion)))
         cv2.imshow("ABC", self.drawnImg)
-        cv2.waitKey(0)
+        if not self.testMode:
+            cv2.waitKey(0)
 
 
     # Refresh image with drawn points
@@ -31,7 +35,9 @@ class Visualize:
             self.drawnImg = cv2.resize(self.drawnImg, (1000, int(1000 * proportion)))
             #self.drawnImg = cv2.resize(self.drawnImg, (1000, 600))
         cv2.imshow("ABC", self.drawnImg)
-        cv2.waitKey(100)
+        if not self.testMode:
+            cv2.waitKey(20)
+
         #cv2.destroyAllWindows()
 
     # Draw point on image
@@ -49,4 +55,7 @@ class Visualize:
         self.drawnImg = self.img.copy()
 
     def wait(self):
-        cv2.waitKey(0)
+        if not self.testMode:
+            cv2.waitKey(0)
+        else:
+            cv2.imwrite(self.outputImageName + ".png", self.drawnImg)

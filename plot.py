@@ -2,7 +2,7 @@
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
+import gc
 
 class Plot:
     xValues = []
@@ -18,6 +18,14 @@ class Plot:
 
         self.fig = plt.figure()
         plt.ion()
+        plt.xlabel("Iteration number")
+        plt.ylabel("Fitness")
+
+        self.xValues = []
+        self.yValues = []
+
+        self.xMin = 0
+        self.xMax = 0
 
 
     def drawPoint(self, _yVal):
@@ -26,7 +34,16 @@ class Plot:
 
         #plt.clear()
         plt.plot(self.xValues, self.yValues, 'b')
-        plt.pause(0.05)
+        plt.pause(0.01)
         #plt.show()
+
+    def savePlot(self, filename):
+        plt.savefig(filename + ".png")
+        plt.clf()
+        plt.close('all')
+
+
+
+
 
 

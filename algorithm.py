@@ -24,6 +24,7 @@ class ABC:
     # Solutions set
     solutions = []
     bestSolution = None
+    bestSolutionIterationNumber = 0
     iterBestSolution = None
 
     # Images
@@ -51,6 +52,10 @@ class ABC:
 
     # for future use
     showLog = False
+
+    testMode = False
+    plotFileName = "plotFile"
+    imgFileName = "figFile"
 
 
     # </editor-fold>
@@ -80,16 +85,20 @@ class ABC:
 
 
     # Data presentation settings
-    def settings(self, _showGUI=False, _showLog=False, _showPlot=False):
+    def settings(self, _showGUI=False, _showLog=False, _showPlot=False, _testMode=False, _plotFileName="plotFile", _imgFileName="imgName"):
         self.showGUI = _showGUI
+        self.testMode = _testMode
         self.showLog = _showLog
         self.showPlot = _showPlot
+
+        self.plotFileName = _plotFileName
+        self.imgFileName = _imgFileName
 
         if self.showPlot:
             self.plot = Plot(self.MCN)
 
         if self.showGUI:
-            self.visualize = Visualize(self.imgRef)
+            self.visualize = Visualize(self.imgRef, _testMode=self.testMode, _outputImgName=self.imgFileName)
             self.visualize.refresh()
 
 
@@ -103,7 +112,7 @@ class ABC:
         self.showBees(self.solutions)
 
         self.calculateFitness()
-        self.findBestSolution()
+        self.findBestSolution(CCN)
         print("Init best pos({}, {}), fitness: {}".format(self.bestSolution.x,
                                                           self.bestSolution.y,
                                                           self.bestSolution.fitness))
@@ -127,7 +136,7 @@ class ABC:
             self.showBees(self.solutions)
 
             self.calculateFitness()
-            self.findBestSolution()
+            self.findBestSolution(CCN)
 
 
             if self.showGUI:
@@ -155,6 +164,9 @@ class ABC:
 
             if self.showGUI:
                 self.visualize.refresh()
+
+        if self.testMode:
+            self.plot.savePlot(self.plotFileName)
 
         if self.showGUI:
             self.visualize.wait()
@@ -282,15 +294,17 @@ class ABC:
         self.SBN = 0
 
     # Return best solution
-    def findBestSolution(self):
+    def findBestSolution(self, currentIteration):
         self.solutions.sort(key=lambda x: x.fitness)
 
         self.iterBestSolution = self.solutions[-1]
 
         if self.bestSolution is None:
             self.bestSolution =  self.solutions[-1]
+            self.bestSolutionIterationNumber = currentIteration
         elif self.bestSolution.fitness < self.solutions[-1].fitness:
             self.bestSolution = self.solutions[-1]
+            self.bestSolutionIterationNumber = currentIteration
 
 
     # Abandon worse half os solutions
